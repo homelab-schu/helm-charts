@@ -1,0 +1,98 @@
+# Default values for prowlarr.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/home-operations/prowlarr
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart's appVersion.
+  tag: "rolling"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podSecurityContext:
+  fsGroup: 568
+
+securityContext:
+  # capabilities:
+  #   drop:
+  #     - ALL
+  runAsNonRoot: true
+  runAsUser: 568
+  runAsGroup: 568
+  allowPrivilegeEscalation: false
+
+service:
+  type: ClusterIP
+  port: 30050
+
+# In a real Kubernetes environment, you would typically use an Ingress
+# to expose your service to the outside world.
+ingress:
+  enabled: false
+  className: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: prowlarr.local
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls: []
+  #  - secretName: prowlarr-tls
+  #    hosts:
+  #      - prowlarr.local
+
+resources:
+  limits:
+    cpu: "2"
+    memory: 4096M
+  requests: {}
+
+# Persistence configuration
+persistence:
+  enabled: true
+  storageClass: "" # Set to "-" to use the default StorageClass
+  accessMode: ReadWriteOnce
+  size: 5Gi # Adjust to your needs
+  # If you want to use an existing claim, set this:
+  # existingClaim: "prowlarr-config-pvc"
+
+# Additional environment variables
+env:
+  TZ: "America/Kentucky/Louisville"
+  # PUID and PGID are handled by securityContext, but we keep them
+  # in case the application image uses them internally.
+  PUID: "568"
+  PGID: "568"
+  UMASK: "002"
+  # The port is handled by the service and probe, but we set it
+  # for the application's configuration.
+  PROWLARR__SERVER__PORT: "30050"
+  PROWLARR__APP__INSTANCENAME: "Prowlarr"
+  # These were in the compose file, so we include them.
+  GID: "568"
+  USER_ID: "568"
+  GROUP_ID: "568"
+  UMASK_SET: "002"
+  NVIDIA_VISIBLE_DEVICES: "void"
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
